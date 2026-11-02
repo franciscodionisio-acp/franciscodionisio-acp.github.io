@@ -222,3 +222,55 @@ html { scroll-padding-top: 155px; }
   .header-institutions .header-logo-ce3c { width: 97px; max-height: 42px; }
   .header-institution-divider { height: 24px; }
 }
+
+
+/* FINAL NAV PLACEMENT — Contact after Academic life, logos top right.
+   This uses the existing HTML: no change to index.html is required. */
+@media (min-width: 801px) {
+  .academic-header {
+    grid-template-columns: max-content minmax(0, 1fr);
+    grid-template-rows: minmax(82px, auto) 62px;
+    column-gap: 0;
+  }
+  .academic-header .header-brand {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .academic-header .header-institutions {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .academic-header .header-main-nav {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+    align-self: center;
+    width: max-content;
+    gap: 27px;
+    border-top: 0;
+    padding-right: 18px;
+  }
+  .academic-header .header-contact {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+    align-self: center;
+    margin: 0;
+    padding: 11px 18px;
+  }
+  .academic-header::after {
+    content: "";
+    grid-column: 1 / -1;
+    grid-row: 2;
+    align-self: start;
+    width: 100%;
+    height: 1px;
+    background: #e3e5e0;
+    pointer-events: none;
+  }
+}
+@media (min-width: 801px) and (max-width: 1000px) {
+  .academic-header .header-main-nav { gap: 22px; padding-right: 15px; }
+  .academic-header .header-contact { padding: 10px 15px; }
+}
