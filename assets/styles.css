@@ -99,18 +99,19 @@ html { scroll-padding-top: 155px; }
 .site-header { background: #f8f7f3; }
 .academic-header {
   display: grid;
-  grid-template-columns: minmax(250px, 325px) minmax(0, 1fr) auto;
+  grid-template-columns: max-content max-content minmax(0, 1fr);
   grid-template-rows: minmax(82px, auto) 48px;
   column-gap: clamp(18px, 3vw, 48px);
   align-items: center;
 }
 .academic-header .header-brand { grid-column: 1; grid-row: 1; min-width: 0; }
 .header-institutions {
-  grid-column: 2;
+  grid-column: 3;
   grid-row: 1;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-self: end;
+  justify-content: flex-end;
   gap: 22px;
   min-width: 0;
 }
@@ -133,8 +134,9 @@ html { scroll-padding-top: 155px; }
 .header-institutions .header-logo-ce3c { width: 118px; max-height: 56px; }
 .header-institution-divider { width: 1px; height: 31px; flex: 0 0 1px; background: #d4dbd7; }
 .header-contact {
-  grid-column: 3;
+  grid-column: 2;
   grid-row: 1;
+  justify-self: start;
   padding: 14px 22px;
   border: 1px solid #23343c;
   font: 700 12px var(--sans);
@@ -160,7 +162,7 @@ html { scroll-padding-top: 155px; }
 .academic-header .header-menu-button { display: none; }
 
 @media (max-width: 1000px) and (min-width: 801px) {
-  .academic-header { grid-template-columns: minmax(210px, 290px) minmax(0, 1fr) auto; column-gap: 16px; }
+  .academic-header { grid-template-columns: max-content max-content minmax(0, 1fr); column-gap: 16px; }
   .header-institutions { gap: 14px; }
   .header-institutions .header-logo-fcul { width: 165px; }
   .header-institutions .header-logo-ce3c { width: 95px; }
@@ -183,7 +185,8 @@ html { scroll-padding-top: 155px; }
   .academic-header .header-institutions {
     grid-column: 1 / -1;
     grid-row: 2;
-    justify-content: flex-start;
+    justify-self: end;
+    justify-content: flex-end;
     gap: 18px;
     border-top: 1px solid #e3e5e0;
     padding: 10px 0;
