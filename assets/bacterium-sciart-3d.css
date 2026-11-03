@@ -106,22 +106,28 @@
 
 
 /* ──────────────────────────────────────────────────────────────
-   CLEANER FIGURE VERSION — BLUE HERO BACKGROUND
+   CLEAN FIGURE VERSION — NO RECTANGLE, NO CORNERS
    - removes requested labels and hint text
-   - removes the black rectangle and lets the figure blend with the hero background
+   - removes the rectangle and corner marks around the figure
+   - keeps the figure integrated with the hero dark-blue background
    ────────────────────────────────────────────────────────────── */
 .hero-art .art-inner {
   background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
 }
 .hero-art .art-topline,
 .hero-art .sciart-hint,
 .hero-art .art-seal,
-.hero-art .sciart-orbit {
+.hero-art .sciart-orbit,
+.hero-art .art-corner,
+.hero-art .art-bottomline {
   display: none !important;
 }
 .hero-art .bacterium-sciart-stage {
   background: transparent !important;
-  margin: 12px -8px 4px;
+  margin: 0 !important;
+  border-radius: 0 !important;
 }
 .hero-art .bacterium-sciart-stage::before,
 .hero-art .bacterium-sciart-stage::after {
