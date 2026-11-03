@@ -103,3 +103,29 @@
   .hero-art .bacterium-sciart-fallback,
   .hero-art .sciart-hint { transition: none; }
 }
+
+
+/* ──────────────────────────────────────────────────────────────
+   CLEANER FIGURE VERSION
+   - removes requested labels and hint text
+   - makes the scene background uniformly black
+   ────────────────────────────────────────────────────────────── */
+.hero-art .art-inner {
+  background: #000 !important;
+}
+.hero-art .art-topline,
+.hero-art .sciart-hint,
+.hero-art .art-seal,
+.hero-art .sciart-orbit {
+  display: none !important;
+}
+.hero-art .bacterium-sciart-stage {
+  background: #000 !important;
+}
+.hero-art .bacterium-sciart-stage::before,
+.hero-art .bacterium-sciart-stage::after {
+  display: none !important;
+}
+.hero-art .bacterium-sciart-fallback {
+  filter: none;
+}
