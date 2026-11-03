@@ -280,7 +280,7 @@ function initialise3D(THREE, mount) {
     transparent: true, opacity: 0.43,
     sizeAttenuation: true, depthWrite: false
   }));
-  scene.add(stars);
+  // scene.add(stars);
 
   // Camera framing responds to the panel dimensions.
   function resize() {
