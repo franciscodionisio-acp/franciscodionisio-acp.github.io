@@ -11,8 +11,10 @@
   <title>Francisco Dionísio — Microbial Evolution & Plasmid Biology</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/styles.css">
+  <link rel="stylesheet" href="assets/bacterium-sciart-3d.css">
   <script src="assets/publications.js" defer></script>
   <script src="assets/app.js" defer></script>
+  <script type="module" src="assets/bacterium-sciart-3d.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -68,9 +70,14 @@
                   <p class="hero-role">Francisco Dionísio <span aria-hidden="true">/</span> Associate Professor with Habilitation<br>Faculty of Sciences · University of Lisbon</p>
                   <div class="hero-actions"><a class="button button-light" href="#research">Explore my research <span aria-hidden="true">↗</span></a><a class="text-link text-link-light" href="#publications">Browse publications <span aria-hidden="true">↓</span></a></div>
               </div>
-              <div class="hero-art" aria-label="Stylised bacterial cell with DNA, plasmid elements and scientific callouts" role="img">
+              <div class="hero-art" aria-label="Interactive scientific visualisation of a bacterial cell" role="group">
                   <div class="art-corner art-corner-tl"></div><div class="art-corner art-corner-br"></div>
-                  <div class="art-inner"><div class="art-topline"><span>MICROBIAL SYSTEMS</span><span>01 / 04</span></div><img class="hero-cell-image" src="assets/bacterial-cell-hero.webp" alt="Artistic illustration of a bacterial cell, its genetic material, and plasmid-related callouts" fetchpriority="high" width="940" height="995"><div class="art-bottomline"><span>EVOLUTION × ECOLOGY × GENETICS</span><span class="art-seal">FD / 26</span></div></div>
+                  <div class="art-inner"><div class="art-topline"><span>MICROBIAL SYSTEMS</span><span>01 / 04</span></div><div class="bacterium-sciart-stage" data-bacterium-3d role="img" aria-label="A three-dimensional artistic bacterium rotating through 360 degrees, showing its surface, plasmid-like DNA loops, and flagella">
+                          <img class="bacterium-sciart-fallback" src="assets/bacterial-cell-hero.webp" alt="" width="940" height="995" fetchpriority="high">
+                          <span class="sciart-orbit sciart-orbit-one" aria-hidden="true"></span>
+                          <span class="sciart-orbit sciart-orbit-two" aria-hidden="true"></span>
+                          <span class="sciart-hint" aria-hidden="true">DRAG TO EXPLORE <span>↔</span> 3D MODEL</span>
+                      </div><div class="art-bottomline"><span>EVOLUTION × ECOLOGY × GENETICS</span><span class="art-seal">FD / 26</span></div></div>
               </div>
           </div>
           <div class="container hero-bottom"><span>RESEARCH ACROSS MOLECULES, CELLS & POPULATIONS</span><span class="hero-scroll">SCROLL TO DISCOVER <span aria-hidden="true">↓</span></span></div>
