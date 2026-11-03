@@ -1,0 +1,132 @@
+/* ──────────────────────────────────────────────────────────────
+   SCI-ART ROTATING 3D BACTERIUM (Three.js / WebGL)
+   Safe to append to the existing website CSS. The initial 2D
+   illustration remains as a fallback if WebGL/CDN is unavailable.
+   ────────────────────────────────────────────────────────────── */
+.hero-art .bacterium-sciart-stage {
+  position: relative;
+  isolation: isolate;
+  display: block;
+  flex: 1 1 auto;
+  align-self: stretch;
+  min-width: 0;
+  min-height: 350px;
+  margin: 12px -8px 4px;
+  overflow: hidden;
+  border-radius: 6px;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(46, 109, 115, .25), transparent 58%),
+    radial-gradient(ellipse at 50% 55%, rgba(11, 32, 45, .20), transparent 75%);
+}
+.hero-art .bacterium-sciart-stage::before,
+.hero-art .bacterium-sciart-stage::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%,-50%);
+  width: 75%; aspect-ratio: 1;
+  border: 1px solid rgba(155,224,214,.12);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.hero-art .bacterium-sciart-stage::after {
+  width: 96%;
+  border: 1px dashed rgba(155,224,214,.095);
+}
+.hero-art .bacterium-sciart-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  z-index: 2;
+  cursor: grab;
+  touch-action: pan-y;
+}
+.hero-art .bacterium-sciart-stage canvas:active { cursor: grabbing; }
+.hero-art .bacterium-sciart-fallback {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: contain;
+  z-index: 1;
+  opacity: 1;
+  filter: drop-shadow(0 0 16px rgba(115, 200, 189, .14));
+  animation: none !important;
+  transition: opacity .5s ease;
+}
+.hero-art .bacterium-sciart-stage.is-ready .bacterium-sciart-fallback { opacity: 0; }
+.hero-art .bacterium-sciart-stage.bacterium-fallback-only canvas { display: none; }
+.hero-art .sciart-hint {
+  position: absolute;
+  z-index: 4;
+  left: 50%; bottom: 10px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  color: rgba(183,221,218,.62);
+  letter-spacing: 1.9px;
+  font: 700 8px/1.5 var(--head, sans-serif);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .6s ease;
+}
+.hero-art .sciart-hint span { color: #e4c59f; font-size: 12px; margin: 0 8px; }
+.hero-art .bacterium-sciart-stage.is-ready .sciart-hint { opacity: 1; }
+.hero-art .sciart-orbit {
+  position: absolute;
+  z-index: 0;
+  width: 66%;
+  aspect-ratio: 1;
+  border: 1px dotted rgba(161, 216, 208, .13);
+  border-radius: 50%;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%) rotate(-28deg) scaleX(1.12);
+  pointer-events: none;
+}
+.hero-art .sciart-orbit-two {
+  width: 88%;
+  transform: translate(-50%,-50%) rotate(35deg) scaleY(.68);
+  border-color: rgba(244, 210, 163, .12);
+}
+@media (max-width: 800px) {
+  .hero-art .bacterium-sciart-stage { min-height: 340px; }
+}
+@media (max-width: 550px) {
+  .hero-art .bacterium-sciart-stage { min-height: 280px; margin: 7px -10px 1px; }
+  .hero-art .sciart-hint { bottom: 3px; font-size: 7px; letter-spacing: 1.1px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-art .bacterium-sciart-fallback,
+  .hero-art .sciart-hint { transition: none; }
+}
+
+
+/* ──────────────────────────────────────────────────────────────
+   CLEANER FIGURE VERSION — BLUE HERO BACKGROUND
+   - removes requested labels and hint text
+   - removes the black rectangle and lets the figure blend with the hero background
+   ────────────────────────────────────────────────────────────── */
+.hero-art .art-inner {
+  background: transparent !important;
+}
+.hero-art .art-topline,
+.hero-art .sciart-hint,
+.hero-art .art-seal,
+.hero-art .sciart-orbit {
+  display: none !important;
+}
+.hero-art .bacterium-sciart-stage {
+  background: transparent !important;
+  margin: 12px -8px 4px;
+}
+.hero-art .bacterium-sciart-stage::before,
+.hero-art .bacterium-sciart-stage::after {
+  display: none !important;
+}
+.hero-art .bacterium-sciart-fallback {
+  filter: none;
+}
