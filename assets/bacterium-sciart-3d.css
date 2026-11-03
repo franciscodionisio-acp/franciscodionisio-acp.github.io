@@ -106,12 +106,12 @@
 
 
 /* ──────────────────────────────────────────────────────────────
-   CLEANER FIGURE VERSION
+   CLEANER FIGURE VERSION — BLUE HERO BACKGROUND
    - removes requested labels and hint text
-   - makes the scene background uniformly black
+   - removes the black rectangle and lets the figure blend with the hero background
    ────────────────────────────────────────────────────────────── */
 .hero-art .art-inner {
-  background: #000 !important;
+  background: transparent !important;
 }
 .hero-art .art-topline,
 .hero-art .sciart-hint,
@@ -120,7 +120,8 @@
   display: none !important;
 }
 .hero-art .bacterium-sciart-stage {
-  background: #000 !important;
+  background: transparent !important;
+  margin: 12px -8px 4px;
 }
 .hero-art .bacterium-sciart-stage::before,
 .hero-art .bacterium-sciart-stage::after {
