@@ -136,3 +136,17 @@
 .hero-art .bacterium-sciart-fallback {
   filter: none;
 }
+
+/* Ocultar imagem antiga durante o carregamento do modelo 3D */
+.hero-art .bacterium-sciart-stage .bacterium-sciart-fallback {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: none !important;
+}
+
+/* Mostrar imagem alternativa apenas se o 3D falhar */
+.hero-art .bacterium-sciart-stage.bacterium-fallback-only .bacterium-sciart-fallback {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
