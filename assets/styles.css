@@ -311,3 +311,31 @@ html { scroll-padding-top: 155px; }
   }
 }
 
+
+/* Logótipos junto ao nome */
+
+@media (min-width: 801px) {
+  .academic-header {
+    position: relative;
+  }
+
+  .academic-header .header-institutions {
+    position: absolute !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
+    top: 11px;
+    left: 305px;
+    right: auto !important;
+    justify-self: start !important;
+    justify-content: flex-start !important;
+    gap: 18px;
+  }
+}
+
+@media (min-width: 801px) and (max-width: 1000px) {
+  .academic-header .header-institutions {
+    left: 285px;
+    top: 14px;
+    gap: 12px;
+  }
+}
