@@ -265,8 +265,8 @@ function startBacterium(T, mount) {
     turner.rotation.y = (reduced ? 0.36 : t * 2 * Math.PI / 12) + dx;
     turner.rotation.x = 0.13 + dy + (reduced ? 0 : 0.035 * Math.sin(t * 0.55));
     if (!reduced) {
-  flags.rotation.y = 0.14 * Math.sin(t * 1.5);
-  flags.rotation.z = 0.08 * Math.cos(t * 1.1);
+  flags.rotation.y = 0.14 * Math.sin(t * 10.5);
+  flags.rotation.z = 0.08 * Math.cos(t * 10.1);
   flags.rotation.x = 0.05 * Math.sin(t * 5.9);
 }
     renderer.render(scene, camera);
