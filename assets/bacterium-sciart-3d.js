@@ -1,591 +1,282 @@
+
 /*
- * bacterium-sciart-3d.js
- * New clean 3D bacterium from scratch
- * Transparent cyan bacterium with chromosome, plasmids, pili and flagella
- * Built with Three.js
+ * BACTERIUM 3D — hollow black interior, luminous wool-like chromosome.
+ * Replace the entire assets/bacterium-sciart-3d.js with this file.
+ * Three.js v0.165.0; transparent canvas; true 360-degree rotation.
  */
 
 const mount = document.querySelector('[data-bacterium-3d]');
-
 if (mount) {
   import('https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js')
-    .then((THREE) => {
-      initBacterium3D(THREE, mount);
-    })
-    .catch((error) => {
-      console.warn('Could not load Three.js; using fallback image.', error);
+    .then(THREE => startBacterium(THREE, mount))
+    .catch(err => {
+      console.error('Não foi possível iniciar a bactéria 3D:', err);
       mount.classList.add('bacterium-fallback-only');
     });
 }
 
-function initBacterium3D(THREE, mount) {
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  const scene = new THREE.Scene();
-
-  const renderer = new THREE.WebGLRenderer({
-    alpha: true,
-    antialias: true,
-    powerPreference: 'high-performance'
-  });
-
+function startBacterium(T, mount) {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const scene = new T.Scene();
+  const renderer = new T.WebGLRenderer({ alpha: true, antialias: true });
   renderer.setClearColor(0x000000, 0);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.85;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer.domElement.style.display = 'block';
-  renderer.domElement.style.width = '100%';
-  renderer.domElement.style.height = '100%';
+  renderer.outputColorSpace = T.SRGBColorSpace;
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.7));
   renderer.domElement.setAttribute('aria-hidden', 'true');
   mount.appendChild(renderer.domElement);
 
-  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-  camera.position.set(0, 0.1, 12);
+  const camera = new T.PerspectiveCamera(39, 1, 0.1, 50);
+  camera.position.set(0, 0, 10.5);
+  scene.add(new T.AmbientLight(0xffffff, 1.3));
+  const lamp = new T.PointLight(0x80fff0, 25, 25);
+  lamp.position.set(-4, 4, 6);
+  scene.add(lamp);
 
-  // ------------------------------------------------------------
-  // LIGHTS
-  // ------------------------------------------------------------
-  scene.add(new THREE.AmbientLight(0xd8ffff, 1.15));
+  const turner = new T.Group();
+  scene.add(turner);
+  turner.position.x = -0.38;
+  turner.scale.setScalar(0.80);
+  const cell = new T.Group();
+  cell.rotation.z = -0.38;
+  turner.add(cell);
 
-  const hemi = new THREE.HemisphereLight(0xbffdfb, 0x021116, 1.05);
-  scene.add(hemi);
-
-  addPointLight(0xffffff, 2.1, [-4.8, 4.0, 7.0]);
-  addPointLight(0x49fff2, 2.5, [4.3, -0.8, 5.0]);
-  addPointLight(0xffd680, 1.8, [2.5, 1.0, 5.5]);
-  addPointLight(0x2a6fff, 1.4, [-2.0, -2.5, 4.0]);
-
-  function addPointLight(color, intensity, pos) {
-    const light = new THREE.PointLight(color, intensity, 40);
-    light.position.set(pos[0], pos[1], pos[2]);
-    scene.add(light);
-  }
-
-  // ------------------------------------------------------------
-  // ROOT GROUP
-  // ------------------------------------------------------------
-  const root = new THREE.Group();
-  scene.add(root);
-  root.position.set(0.35, -0.25, 0);
-
-  const bacterium = new THREE.Group();
-  bacterium.rotation.z = -0.45;
-  bacterium.rotation.x = 0.12;
-  root.add(bacterium);
-
-  // ------------------------------------------------------------
-  // MATERIALS
-  // ------------------------------------------------------------
-  const membraneMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x8ffcf2,
-    emissive: 0x18cfc7,
-    emissiveIntensity: 0.45,
-    transparent: true,
-    opacity: 0.28,
-    transmission: 0.58,
-    thickness: 0.7,
-    ior: 1.18,
-    roughness: 0.12,
-    clearcoat: 1,
-    clearcoatRoughness: 0.08,
-    metalness: 0.02,
-    side: THREE.DoubleSide,
-    depthWrite: false
-  });
-
-  const innerBodyMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x0d4f52,
-    emissive: 0x0d7a7e,
-    emissiveIntensity: 0.28,
-    transparent: true,
-    opacity: 0.22,
-    roughness: 0.28,
-    clearcoat: 0.25,
-    metalness: 0.02,
-    depthWrite: false
-  });
-
-  const outerGlowMaterial = new THREE.MeshBasicMaterial({
-    color: 0xbafff7,
-    transparent: true,
-    opacity: 0.08,
-    side: THREE.BackSide,
-    depthWrite: false
-  });
-
-  const chromosomeMaterial = new THREE.MeshStandardMaterial({
-    color: 0x9dcbff,
-    emissive: 0x3972ff,
-    emissiveIntensity: 0.75,
-    roughness: 0.22,
-    metalness: 0.03
-  });
-
-  const chromosomeSoftMaterial = new THREE.MeshStandardMaterial({
-    color: 0x76b0ff,
-    emissive: 0x2450dd,
-    emissiveIntensity: 0.42,
-    roughness: 0.3,
-    metalness: 0.02
-  });
-
-  const plasmidMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffe59b,
-    emissive: 0xffb54f,
-    emissiveIntensity: 0.75,
-    roughness: 0.35,
-    metalness: 0.04
-  });
-
-  const piliMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xacfff8,
-    emissive: 0x2ae0d3,
-    emissiveIntensity: 0.58,
-    transparent: true,
-    opacity: 0.82,
-    roughness: 0.28,
-    clearcoat: 0.7,
-    clearcoatRoughness: 0.16
-  });
-
-  const piliTipMaterial = new THREE.MeshBasicMaterial({
-    color: 0xffd98a,
-    transparent: true,
-    opacity: 0.92
-  });
-
-  const flagellumMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xc8fff9,
-    emissive: 0x45efe0,
-    emissiveIntensity: 0.72,
-    transparent: true,
-    opacity: 0.94,
-    roughness: 0.2,
-    clearcoat: 1,
-    clearcoatRoughness: 0.08
-  });
-
-  const flagellumWarmMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xfff0c4,
-    emissive: 0xf0b24a,
-    emissiveIntensity: 0.55,
-    transparent: true,
-    opacity: 0.72,
-    roughness: 0.28,
-    clearcoat: 0.9,
-    clearcoatRoughness: 0.1
-  });
-
-  const particleMaterial = new THREE.MeshStandardMaterial({
-    color: 0xcafffa,
-    emissive: 0x19f1d5,
-    emissiveIntensity: 0.85,
-    transparent: true,
-    opacity: 0.78,
-    roughness: 0.7
-  });
-
-  // ------------------------------------------------------------
-  // HELPERS
-  // ------------------------------------------------------------
-  function makeCapsule(radius, length, material, radialSegments = 48, capSegments = 18) {
-    const mesh = new THREE.Mesh(
-      new THREE.CapsuleGeometry(radius, length, capSegments, radialSegments),
-      material
-    );
+  // No solid cytoplasm: this is deliberate. The black surface is rendered
+  // ONLY on the inner/back side; the front remains open for a clear view.
+  const R = 0.93, L = 3.05;
+  function capsule(radius, length, material) {
+    const mesh = new T.Mesh(new T.CapsuleGeometry(radius, length, 18, 56), material);
     mesh.rotation.z = Math.PI / 2;
     return mesh;
   }
+  const blackBack = capsule(R, L, new T.MeshBasicMaterial({
+    color: 0x000000, side: T.BackSide, depthWrite: false
+  }));
+  blackBack.renderOrder = -20;
+  cell.add(blackBack);
 
-  function makeTube(points, radius, material, tubularSegments = 160, radialSegments = 8, closed = false) {
-    const curve = new THREE.CatmullRomCurve3(points, closed, 'centripetal');
-    return new THREE.Mesh(
-      new THREE.TubeGeometry(curve, tubularSegments, radius, radialSegments, closed),
-      material
-    );
+  // Fresnel transparency: nearly invisible at the centre and a glowing
+  // turquoise outline at glancing angles. No coloured fill.
+  const membrane = new T.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    side: T.FrontSide,
+    blending: T.AdditiveBlending,
+    uniforms: { tint: { value: new T.Color(0x36f9e4) } },
+    vertexShader: `
+      varying vec3 vNormalView, vDirection;
+      void main() {
+        vec4 p = modelViewMatrix * vec4(position, 1.0);
+        vNormalView = normalize(normalMatrix * normal);
+        vDirection = normalize(-p.xyz);
+        gl_Position = projectionMatrix * p;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 tint;
+      varying vec3 vNormalView, vDirection;
+      void main() {
+        float rim = pow(1.0 - abs(dot(normalize(vNormalView),
+                                       normalize(vDirection))), 2.0);
+        float alpha = 0.008 + 0.67 * rim;
+        gl_FragColor = vec4(tint, alpha);
+      }
+    `
+  });
+  const glass = capsule(R + 0.015, L + 0.02, membrane);
+  glass.renderOrder = 20;
+  cell.add(glass);
+
+  const blue = new T.MeshBasicMaterial({ color: 0x4a8cff });
+  const ice = new T.MeshBasicMaterial({ color: 0xd7f4ff });
+  const pink = new T.MeshBasicMaterial({ color: 0xa65dff });
+  const gold = new T.MeshBasicMaterial({ color: 0xffbc4a });
+  const cream = new T.MeshBasicMaterial({ color: 0xfff1b5 });
+  const aqua = new T.MeshBasicMaterial({ color: 0x57fff0 });
+  const filamentGlow = new T.MeshBasicMaterial({
+    color: 0x376dff, transparent: true, opacity: 0.16,
+    blending: T.AdditiveBlending, depthWrite: false
+  });
+  function meshTube(curve, radius, material, steps = 160) {
+    return new T.Mesh(new T.TubeGeometry(curve, steps, radius, 7, curve.closed), material);
+  }
+  function path(points, closed = false) {
+    return new T.CatmullRomCurve3(points, closed, 'centripetal');
   }
 
-  let seed = 32719;
-  function random() {
-    seed = (1664525 * seed + 1013904223) >>> 0;
-    return seed / 4294967296;
+  // ONE continuous, convoluted chromosome. Fine helically wrapped fibres
+  // create the fluorescent 'cordão de lã' texture.
+  const chromosome = new T.Group();
+  cell.add(chromosome);
+  const spine = [];
+  for (let i = 0; i < 420; i++) {
+    const u = i / 420 * Math.PI * 2;
+    spine.push(new T.Vector3(
+      1.04 * Math.sin(2 * u) + 0.14 * Math.sin(13 * u),
+      0.30 * Math.sin(7 * u) + 0.15 * Math.cos(11 * u),
+      0.28 * Math.cos(5 * u) + 0.14 * Math.sin(9 * u)
+    ));
+  }
+  const centralCurve = path(spine, true);
+  chromosome.add(meshTube(centralCurve, 0.063, filamentGlow, 500));
+  chromosome.add(meshTube(centralCurve, 0.039, blue, 500));
+  const frames = centralCurve.computeFrenetFrames(600, true);
+  for (let strand = 0; strand < 5; strand++) {
+    const fibre = [];
+    for (let j = 0; j < 600; j++) {
+      const t = j / 600;
+      const p = centralCurve.getPointAt(t);
+      const a = t * Math.PI * 2 * 95 + strand * Math.PI * 2 / 5;
+      const n = frames.normals[j], b = frames.binormals[j];
+      fibre.push(p.addScaledVector(n, 0.042 * Math.cos(a))
+                  .addScaledVector(b, 0.042 * Math.sin(a)));
+    }
+    chromosome.add(meshTube(path(fibre, true), 0.007,
+      strand === 0 ? pink : ice, 750));
   }
 
-  // ------------------------------------------------------------
-  // MAIN BACTERIAL BODY
-  // ------------------------------------------------------------
-  const innerBody = makeCapsule(0.97, 3.35, innerBodyMaterial, 56, 18);
-  bacterium.add(innerBody);
-
-  const membrane = makeCapsule(1.12, 3.55, membraneMaterial, 64, 18);
-  bacterium.add(membrane);
-
-  const outerGlow = makeCapsule(1.15, 3.6, outerGlowMaterial, 56, 18);
-  bacterium.add(outerGlow);
-
-  // ------------------------------------------------------------
-  // CYTOPLASMIC PARTICLES
-  // ------------------------------------------------------------
-  const particleGeometry = new THREE.IcosahedronGeometry(0.024, 0);
-  const particleMesh = new THREE.InstancedMesh(particleGeometry, particleMaterial, 240);
-  const dummy = new THREE.Object3D();
-
-  for (let i = 0; i < 240; i++) {
-    const x = -1.9 + random() * 3.8;
-    const angle = random() * Math.PI * 2;
-    const radius = Math.sqrt(random()) * 0.72;
-
-    dummy.position.set(
-      x,
-      Math.cos(angle) * radius,
-      Math.sin(angle) * radius
-    );
-
-    const s = 0.25 + random() * 0.75;
-    dummy.scale.setScalar(s);
-
-    dummy.rotation.set(
-      random() * Math.PI,
-      random() * Math.PI,
-      random() * Math.PI
-    );
-
-    dummy.updateMatrix();
-    particleMesh.setMatrixAt(i, dummy.matrix);
-  }
-
-  particleMesh.instanceMatrix.needsUpdate = true;
-  bacterium.add(particleMesh);
-
-  // ------------------------------------------------------------
-  // CHROMOSOME
-  // ------------------------------------------------------------
-  const chromosomeGroup = new THREE.Group();
-  chromosomeGroup.position.set(-0.15, 0, 0);
-  bacterium.add(chromosomeGroup);
-
-  const chromosomeConfigs = [
-    { phase: 0.0, ay: 0.28, az: 0.21, f1: 3.8, f2: 4.3, radius: 0.032, material: chromosomeMaterial },
-    { phase: 0.9, ay: 0.24, az: 0.19, f1: 4.4, f2: 4.8, radius: 0.028, material: chromosomeMaterial },
-    { phase: 1.9, ay: 0.31, az: 0.23, f1: 5.2, f2: 4.6, radius: 0.023, material: chromosomeSoftMaterial },
-    { phase: 2.6, ay: 0.27, az: 0.22, f1: 4.7, f2: 5.4, radius: 0.021, material: chromosomeSoftMaterial }
+  // FOUR real, three-dimensional, double-stranded circular plasmids.
+  const plasmids = new T.Group();
+  cell.add(plasmids);
+  const locations = [
+    [-1.22, 0.38, 0.30, 0.23],
+    [-1.20, -0.34, -0.30, 0.20],
+    [1.16, 0.34, -0.22, 0.21],
+    [1.20, -0.35, 0.34, 0.24]
   ];
-
-  chromosomeConfigs.forEach((cfg, idx) => {
-    const points = [];
-
-    for (let i = 0; i <= 170; i++) {
-      const t = i / 170;
-
-      const x =
-        -1.1 + 2.2 * t +
-        0.10 * Math.sin(t * Math.PI * 5.5 + cfg.phase) +
-        0.05 * Math.sin(t * Math.PI * 11.0 + cfg.phase * 0.7);
-
-      const y =
-        cfg.ay * Math.sin(t * Math.PI * cfg.f1 + cfg.phase) +
-        0.07 * Math.sin(t * Math.PI * 8.0 + cfg.phase);
-
-      const z =
-        cfg.az * Math.cos(t * Math.PI * cfg.f2 + cfg.phase) +
-        0.06 * Math.cos(t * Math.PI * 7.2 + cfg.phase);
-
-      points.push(new THREE.Vector3(x, y, z));
+  locations.forEach(([x, y, z, radius], k) => {
+    const ringGroup = new T.Group();
+    ringGroup.position.set(x, y, z);
+    ringGroup.rotation.set(0.4 + k * 0.3, 0.5 + k * 0.42, k * 0.7);
+    for (let s = 0; s < 2; s++) {
+      const pts = [];
+      for (let i = 0; i < 190; i++) {
+        const u = i / 190 * Math.PI * 2;
+        const a = u * 20 + s * Math.PI;
+        const r = radius + 0.018 * Math.cos(a);
+        pts.push(new T.Vector3(r * Math.cos(u), r * Math.sin(u),
+                               0.019 * Math.sin(a)));
+      }
+      ringGroup.add(meshTube(path(pts, true), 0.014,
+        s === 0 ? gold : cream, 260));
     }
-
-    const strand = makeTube(points, cfg.radius, cfg.material, 220, 9, false);
-    chromosomeGroup.add(strand);
-
-    for (let j = 0; j < points.length; j += 14) {
-      const bead = new THREE.Mesh(
-        new THREE.SphereGeometry(idx < 2 ? 0.016 : 0.011, 8, 8),
-        idx < 2 ? chromosomeMaterial : chromosomeSoftMaterial
-      );
-      bead.position.copy(points[j]);
-      chromosomeGroup.add(bead);
-    }
+    plasmids.add(ringGroup);
   });
 
-  // ------------------------------------------------------------
-  // PLASMIDS
-  // ------------------------------------------------------------
-  const plasmidGroup = new THREE.Group();
-  bacterium.add(plasmidGroup);
-
-  const plasmidSpecs = [
-    { pos: [-1.35, -0.48, 0.24], r: 0.23, rot: [0.8, 0.2, 0.1] },
-    { pos: [0.84, 0.44, 0.18], r: 0.18, rot: [0.65, -0.25, 0.35] },
-    { pos: [0.98, -0.12, -0.16], r: 0.20, rot: [0.5, -0.6, 0.18] }
-  ];
-
-  plasmidSpecs.forEach((cfg, idx) => {
-    const group = new THREE.Group();
-    group.position.set(cfg.pos[0], cfg.pos[1], cfg.pos[2]);
-    group.rotation.set(cfg.rot[0], cfg.rot[1], cfg.rot[2]);
-
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(cfg.r, 0.02, 10, 70),
-      plasmidMaterial
-    );
-    group.add(ring);
-
-    for (let i = 0; i < 12; i++) {
-      const a = (i / 12) * Math.PI * 2;
-      const pearl = new THREE.Mesh(
-        new THREE.SphereGeometry(i % 2 === 0 ? 0.010 : 0.007, 8, 8),
-        plasmidMaterial
-      );
-      pearl.position.set(Math.cos(a) * cfg.r, Math.sin(a) * cfg.r, 0);
-      group.add(pearl);
-    }
-
-    group.userData.spinDirection = idx % 2 === 0 ? 1 : -1;
-    plasmidGroup.add(group);
-  });
-
-  // ------------------------------------------------------------
-  // PILI
-  // ------------------------------------------------------------
-  const piliGroup = new THREE.Group();
-  bacterium.add(piliGroup);
-
-  for (let i = 0; i < 150; i++) {
-    const x = -1.9 + random() * 3.8;
-    const theta = random() * Math.PI * 2;
-    const baseRadius = 1.08 + random() * 0.03;
-
-    const base = new THREE.Vector3(
-      x,
-      Math.cos(theta) * baseRadius,
-      Math.sin(theta) * baseRadius
-    );
-
-    const normal = new THREE.Vector3(
-      0,
-      Math.cos(theta),
-      Math.sin(theta)
+  // Thin 3D pili over the cylindrical surface AND rounded poles.
+  let state = 77731;
+  const rand = () => {
+    state = (1664525 * state + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+  const count = 235;
+  const hairs = new T.InstancedMesh(
+    new T.CylinderGeometry(0.003, 0.010, 1, 5), aqua, count
+  );
+  const tips = new T.InstancedMesh(
+    new T.SphereGeometry(0.012, 5, 4), cream, count
+  );
+  const obj = new T.Object3D();
+  const unitY = new T.Vector3(0, 1, 0);
+  for (let i = 0; i < count; i++) {
+    const x = (rand() * 2 - 1) * (L / 2 + R * 0.96);
+    const a = rand() * Math.PI * 2;
+    const cap = Math.max(0, Math.abs(x) - L / 2);
+    const rr = Math.sqrt(Math.max(0.001, R * R - cap * cap));
+    const radial = new T.Vector3(0, Math.cos(a), Math.sin(a));
+    const normal = new T.Vector3(
+      Math.sign(x) * cap / R,
+      radial.y * rr / R,
+      radial.z * rr / R
     ).normalize();
-
-    const tangent = new THREE.Vector3(
-      0,
-      -Math.sin(theta),
-      Math.cos(theta)
-    ).multiplyScalar((random() - 0.5) * 0.12);
-
-    const len = 0.12 + random() * 0.28;
-
-    const points = [
-      base,
-      base.clone()
-        .add(normal.clone().multiplyScalar(len * 0.45))
-        .add(tangent.clone().multiplyScalar(0.25)),
-      base.clone()
-        .add(normal.clone().multiplyScalar(len))
-        .add(tangent)
-    ];
-
-    const pilus = makeTube(points, 0.005 + random() * 0.0025, piliMaterial, 18, 6, false);
-    piliGroup.add(pilus);
-
-    if (random() > 0.48) {
-      const tip = new THREE.Mesh(
-        new THREE.SphereGeometry(0.008 + random() * 0.003, 6, 6),
-        piliTipMaterial
-      );
-      tip.position.copy(points[2]);
-      piliGroup.add(tip);
-    }
+    normal.add(new T.Vector3((rand() - 0.5) * 0.22,
+                            (rand() - 0.5) * 0.15,
+                            (rand() - 0.5) * 0.15)).normalize();
+    const base = new T.Vector3(x, radial.y * rr, radial.z * rr);
+    const len = 0.12 + rand() * 0.22;
+    obj.position.copy(base).addScaledVector(normal, len / 2);
+    obj.quaternion.setFromUnitVectors(unitY, normal);
+    obj.scale.set(1, len, 1);
+    obj.updateMatrix();
+    hairs.setMatrixAt(i, obj.matrix);
+    obj.position.copy(base).addScaledVector(normal, len);
+    obj.quaternion.identity();
+    obj.scale.setScalar(0.65 + rand() * 0.55);
+    obj.updateMatrix();
+    tips.setMatrixAt(i, obj.matrix);
   }
+  hairs.instanceMatrix.needsUpdate = true;
+  tips.instanceMatrix.needsUpdate = true;
+  cell.add(hairs, tips);
 
-  // ------------------------------------------------------------
-  // FLAGELLA
-  // ------------------------------------------------------------
-  const flagellaGroup = new THREE.Group();
-  bacterium.add(flagellaGroup);
-
-  const flagellaSpecs = [
-    { start: [2.05, 0.32, 0.18], len: 3.2, rise: 1.20, sway: 0.68, phase: 0.0, radius: 0.027 },
-    { start: [2.00, 0.12, 0.02], len: 3.0, rise: 0.52, sway: 0.56, phase: 1.0, radius: 0.025 },
-    { start: [1.95, -0.08, -0.12], len: 3.0, rise: -0.06, sway: 0.50, phase: 2.2, radius: 0.023 },
-    { start: [1.90, -0.24, -0.20], len: 2.8, rise: -0.54, sway: 0.45, phase: 3.1, radius: 0.021 }
-  ];
-
-  flagellaSpecs.forEach((cfg, index) => {
-    const points = [];
-
-    for (let i = 0; i <= 90; i++) {
-      const t = i / 90;
-      const curveAmp = (0.10 + t * cfg.sway) * (0.45 + t * 0.65);
-
-      points.push(new THREE.Vector3(
-        cfg.start[0] + t * cfg.len,
-        cfg.start[1] + cfg.rise * t + Math.sin(t * Math.PI * 2.5 + cfg.phase) * curveAmp,
-        cfg.start[2] + Math.cos(t * Math.PI * 2.2 + cfg.phase) * curveAmp * 0.7
+  // FOUR luminous, spatially curved flagella, attached to the right pole.
+  const flags = new T.Group();
+  cell.add(flags);
+  const flagColors = [aqua, cream, aqua, gold];
+  for (let k = 0; k < 4; k++) {
+    const pts = [];
+    for (let i = 0; i <= 120; i++) {
+      const t = i / 120;
+      const phase = k * 1.27;
+      pts.push(new T.Vector3(
+        L / 2 + R * 0.78 + t * (1.55 + 0.3 * k),
+        0.23 * Math.sin(phase) + t * (0.30 + k * 0.12) +
+          0.37 * t * Math.sin(t * Math.PI * 3.4 + phase),
+        0.23 * Math.cos(phase) + 0.30 * t * Math.cos(t * Math.PI * 3 + phase)
       ));
     }
+    flags.add(meshTube(path(pts), 0.019 - k * 0.002,
+                       flagColors[k], 230));
+    flags.add(meshTube(path(pts), 0.006, cream, 230));
+  }
 
-    const core = makeTube(points, cfg.radius, flagellumMaterial, 230, 10, false);
-    flagellaGroup.add(core);
-
-    const overlay = makeTube(points, cfg.radius * 0.38, flagellumWarmMaterial, 220, 8, false);
-    overlay.material.transparent = true;
-    overlay.material.opacity = 0.55;
-    flagellaGroup.add(overlay);
-  });
-
-  // ------------------------------------------------------------
-  // SOFT HIGHLIGHTS ON THE MEMBRANE
-  // ------------------------------------------------------------
-  const highlightGroup = new THREE.Group();
-  bacterium.add(highlightGroup);
-
-  const highlightMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffefbf,
-    emissive: 0xf6b450,
-    emissiveIntensity: 0.9,
-    roughness: 0.34,
-    metalness: 0.05
-  });
-
-  [
-    [-1.65, 0.36, 0.55],
-    [-1.50, 0.28, 0.48],
-    [0.26, 0.48, 0.70],
-    [0.48, 0.56, 0.64],
-    [0.72, 0.52, 0.52]
-  ].forEach((p, i) => {
-    const glow = new THREE.Mesh(
-      new THREE.SphereGeometry(0.07 + (i % 2) * 0.02, 10, 10),
-      highlightMaterial
-    );
-    glow.position.set(p[0], p[1], p[2]);
-    highlightGroup.add(glow);
-  });
-
-  // ------------------------------------------------------------
-  // RESIZE
-  // ------------------------------------------------------------
   function resize() {
-    const width = Math.max(1, mount.clientWidth);
-    const height = Math.max(1, mount.clientHeight);
-
-    camera.aspect = width / height;
-    camera.position.z = width / height < 0.95 ? 13.2 : 12.0;
+    const w = Math.max(1, mount.clientWidth);
+    const h = Math.max(1, mount.clientHeight);
+    camera.aspect = w / h;
+    camera.position.z = w / h < 0.85 ? 12 : 10.5;
     camera.updateProjectionMatrix();
-
-    renderer.setSize(width, height, false);
+    renderer.setSize(w, h, false);
   }
-
   resize();
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(resize).observe(mount);
+  } else window.addEventListener('resize', resize);
 
-  const resizeObserver = typeof ResizeObserver !== 'undefined'
-    ? new ResizeObserver(resize)
-    : null;
-
-  if (resizeObserver) {
-    resizeObserver.observe(mount);
-  } else {
-    window.addEventListener('resize', resize);
-  }
-
-  // ------------------------------------------------------------
-  // POINTER INTERACTION
-  // ------------------------------------------------------------
-  let dragging = false;
-  let prevX = 0;
-  let prevY = 0;
-  let yawOffset = 0;
-  let pitchOffset = 0;
-
+  // Mouse/touch rotation works in addition to automatic full turns.
+  let pressed = false, px = 0, py = 0, dx = 0, dy = 0;
   const canvas = renderer.domElement;
-
-  canvas.addEventListener('pointerdown', (event) => {
-    dragging = true;
-    prevX = event.clientX;
-    prevY = event.clientY;
-    canvas.setPointerCapture(event.pointerId);
+  canvas.addEventListener('pointerdown', e => {
+    pressed = true; px = e.clientX; py = e.clientY;
+    canvas.setPointerCapture(e.pointerId);
   });
-
-  canvas.addEventListener('pointermove', (event) => {
-    if (!dragging) return;
-
-    yawOffset += (event.clientX - prevX) * 0.008;
-    pitchOffset += (event.clientY - prevY) * 0.006;
-    pitchOffset = Math.max(-0.45, Math.min(0.45, pitchOffset));
-
-    prevX = event.clientX;
-    prevY = event.clientY;
-
-    if (prefersReducedMotion) {
-      renderFrame();
-    }
+  canvas.addEventListener('pointermove', e => {
+    if (!pressed) return;
+    dx += (e.clientX - px) * 0.009;
+    dy = Math.max(-0.6, Math.min(0.6, dy + (e.clientY - py) * 0.006));
+    px = e.clientX; py = e.clientY;
+    if (reduced) draw(0);
   });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type =>
+    canvas.addEventListener(type, () => { pressed = false; }));
 
-  function stopDragging() {
-    dragging = false;
-  }
-
-  canvas.addEventListener('pointerup', stopDragging);
-  canvas.addEventListener('pointercancel', stopDragging);
-  canvas.addEventListener('lostpointercapture', stopDragging);
-
-  // ------------------------------------------------------------
-  // ANIMATION
-  // ------------------------------------------------------------
-  const clock = new THREE.Clock();
-  let hasRendered = false;
-
-  function renderFrame() {
-    const t = clock.getElapsedTime();
-
-    if (!prefersReducedMotion) {
-      root.rotation.y = (t * Math.PI * 2) / 24 + yawOffset; // one full turn every 24s
-      root.rotation.x = 0.10 + pitchOffset + 0.04 * Math.sin(t * 0.45);
-      root.rotation.z = 0.02 * Math.sin(t * 0.22);
-
-      root.position.y = -0.04 + 0.05 * Math.sin(t * 0.60);
-
-      chromosomeGroup.rotation.z = 0.04 * Math.sin(t * 0.7);
-      chromosomeGroup.rotation.x = 0.03 * Math.cos(t * 0.65);
-
-      flagellaGroup.rotation.y = 0.05 * Math.sin(t * 0.85);
-      flagellaGroup.rotation.z = 0.025 * Math.sin(t * 0.6);
-
-      plasmidGroup.children.forEach((item) => {
-        item.rotation.z += 0.002 * (item.userData.spinDirection || 1);
-      });
-    } else {
-      root.rotation.y = 0.55 + yawOffset;
-      root.rotation.x = 0.15 + pitchOffset;
-    }
-
+  const beginning = performance.now();
+  function draw(time) {
+    const t = (time - beginning) / 1000;
+    turner.rotation.y = (reduced ? 0.36 : t * 2 * Math.PI / 24) + dx;
+    turner.rotation.x = 0.13 + dy + (reduced ? 0 : 0.035 * Math.sin(t * 0.55));
+    if (!reduced) flags.rotation.y = 0.06 * Math.sin(t * 0.9);
     renderer.render(scene, camera);
-
-    if (!hasRendered) {
-      hasRendered = true;
-      mount.classList.add('is-ready');
-    }
+    mount.classList.add('is-ready');
   }
-
-  function animate() {
-    renderFrame();
-    if (!prefersReducedMotion) {
-      requestAnimationFrame(animate);
-    }
+  function animate(time) {
+    if (!document.hidden) draw(time);
+    if (!reduced) requestAnimationFrame(animate);
   }
-
-  canvas.addEventListener('webglcontextlost', (event) => {
+  draw(beginning);
+  if (!reduced) requestAnimationFrame(animate);
+  canvas.addEventListener('webglcontextlost', event => {
     event.preventDefault();
     mount.classList.remove('is-ready');
     mount.classList.add('bacterium-fallback-only');
   });
-
-  renderFrame();
-
-  if (!prefersReducedMotion) {
-    requestAnimationFrame(animate);
-  }
-
-  mount.classList.add('bacterium-interactive');
 }
