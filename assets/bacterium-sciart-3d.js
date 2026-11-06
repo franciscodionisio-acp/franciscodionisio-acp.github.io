@@ -260,25 +260,22 @@ function startBacterium(T, mount) {
     canvas.addEventListener(type, () => { pressed = false; }));
 
   const beginning = performance.now();
-
-
-function draw(time) {
-  const t = (time - beginning) / 1000;
-
-  turner.rotation.y = (reduced ? 0.36 : t * 2 * Math.PI / 12) + dx;
-  turner.rotation.x = 0.13 + dy + (reduced ? 0 : 0.035 * Math.sin(t * 0.55));
-
-  if (!reduced) {
-    flags.rotation.y = 0.14 * Math.sin(t * 1.5);
-    flags.rotation.z = 0.08 * Math.cos(t * 1.1);
-    flags.rotation.x = 0.05 * Math.sin(t * 1.9);
-  }
-
-  renderer.render(scene, camera);
-  mount.classList.add('is-ready');
+  function draw(time) {
+    const t = (time - beginning) / 1000;
+    turner.rotation.y = (reduced ? 0.36 : t * 2 * Math.PI / 12) + dx;
+    turner.rotation.x = 0.13 + dy + (reduced ? 0 : 0.035 * Math.sin(t * 0.55));
+    if (!reduced) {
+  flags.rotation.y = 0.14 * Math.sin(t * 1.5);
+  flags.rotation.z = 0.08 * Math.cos(t * 1.1);
+  flags.rotation.x = 0.05 * Math.sin(t * 1.9);
 }
-
-  
+    renderer.render(scene, camera);
+    mount.classList.add('is-ready');
+  }
+  function animate(time) {
+    if (!document.hidden) draw(time);
+    if (!reduced) requestAnimationFrame(animate);
+  }
   draw(beginning);
   if (!reduced) requestAnimationFrame(animate);
   canvas.addEventListener('webglcontextlost', event => {
