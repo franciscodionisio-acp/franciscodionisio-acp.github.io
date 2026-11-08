@@ -432,7 +432,7 @@ function moveThirdBacterium(t) {
   // Independent rotation around its longitudinal axis
   // One full rotation every 11 seconds
   thirdRoll.rotation.x =
-    t * Math.PI * 2 / 11;
+    t * Math.PI * 2 / 6;
 }
 
 
