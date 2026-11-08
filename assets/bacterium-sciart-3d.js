@@ -374,7 +374,7 @@ function moveThirdBacterium(t) {
     if (enterFromSide) {
 
       // Enter from left or right
-      x0 = vx > 0 ? -maxX*0.75 : maxX*0.75;
+      x0 = vx > 0 ? -maxX*0.65 : maxX*0.65;
 
       // Random vertical entry position
       y0 = (Math.random() * 1.6 - 0.8) * halfHeight;
@@ -382,7 +382,7 @@ function moveThirdBacterium(t) {
     } else {
 
       // Enter from bottom or top
-      y0 = vy > 0 ? -maxY*0.75 : maxY*0.75;
+      y0 = vy > 0 ? -maxY*0.65 : maxY*0.65;
 
       // Random horizontal entry position
       x0 = (Math.random() * 1.6 - 0.8) * halfWidth;
