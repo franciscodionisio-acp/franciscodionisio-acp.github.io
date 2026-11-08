@@ -242,7 +242,7 @@ function startBacterium(T, mount) {
   // Smaller and farther away
 distantTurner.scale.setScalar(0.44);
 distantTurner.position.set(-4, 4.35, -5.5);
-distantCell.rotation.z = -0.0031;
+distantCell.rotation.z = 0.0;
 
   function moveDistantBacterium(t) {
     if (reduced) {
@@ -272,7 +272,7 @@ distantCell.rotation.z = -0.0031;
     // Independent 3D rotation
     distantTurner.rotation.y = 0;
 distantTurner.rotation.x =
-  t * Math.PI * 2 / 19;
+  t * Math.PI * 2 / 6;
   }
 
 
