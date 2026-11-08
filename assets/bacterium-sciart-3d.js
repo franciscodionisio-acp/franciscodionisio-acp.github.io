@@ -242,7 +242,7 @@ function startBacterium(T, mount) {
   // Smaller and farther away
 distantTurner.scale.setScalar(0.44);
 distantTurner.position.set(-4, 4.35, -5.5);
-distantCell.rotation.z = -0.31;
+distantCell.rotation.z = -0.0031;
 
   function moveDistantBacterium(t) {
     if (reduced) {
