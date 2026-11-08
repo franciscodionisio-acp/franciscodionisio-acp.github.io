@@ -264,15 +264,26 @@ distantCell.rotation.z = 0.0;
     const right = halfVisibleWidth + margin;
 
     // Moves from left to right, repeating every 26 seconds
-    const progress = (t / 26 + 0.24) % 1;
+    
+const journey = t / 26 + 0.24;
+const leg = Math.floor(journey);
+const progress = journey - leg;
 
-    distantTurner.position.x =
-      right - progress * (right - left);
+// Alternate swimming direction after each journey
+const movingRight = leg % 2 === 1;
 
-    // Independent 3D rotation
-    distantTurner.rotation.y = 0;
+// Horizontal movement
+distantTurner.position.x = movingRight
+  ? left + progress * (right - left)
+  : right - progress * (right - left);
+
+// Flagella trail behind the swimming bacterium
+distantTurner.rotation.y = movingRight ? Math.PI : 0;
+
+// Continue rotating around its longitudinal axis
 distantTurner.rotation.x =
   t * Math.PI * 2 / 6;
+
   }
 
 
