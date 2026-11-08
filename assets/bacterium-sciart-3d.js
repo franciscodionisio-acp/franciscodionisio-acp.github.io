@@ -271,7 +271,7 @@ function startBacterium(T, mount) {
 
     // Independent 3D rotation
     distantTurner.rotation.y =
-      t * Math.PI * 2 / 1 + 0.9;
+      t * Math.PI * 2 / 96 + 0.9;
 
     distantTurner.rotation.x = -0.12;
   }
