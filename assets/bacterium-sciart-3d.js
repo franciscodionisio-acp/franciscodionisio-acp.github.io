@@ -265,7 +265,7 @@ distantCell.rotation.z = 0.0;
 
     // Moves from left to right, repeating every 26 seconds
     
-const journey = t / 26 + 0.24;
+const journey = t / 6 + 0.24;
 const leg = Math.floor(journey);
 const progress = journey - leg;
 
