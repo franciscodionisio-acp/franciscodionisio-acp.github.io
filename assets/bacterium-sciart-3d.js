@@ -307,7 +307,7 @@ distantTurner.rotation.x =
   thirdRoll.add(thirdCell);
 
   // One diagonal journey every 28 seconds
-  const thirdTripSeconds = 28;
+  const thirdTripSeconds = 10;
 
   let thirdTripIndex = -1;
   let thirdRoute;
