@@ -229,6 +229,56 @@ function startBacterium(T, mount) {
     flags.add(meshTube(path(pts), 0.006, cream, 230));
   }
 
+
+
+  // Second, smaller 3D bacterium in the background
+  const distantTurner = new T.Group();
+  scene.add(distantTurner);
+
+  // Reuse the same complete 3D model
+  const distantCell = cell.clone(true);
+  distantTurner.add(distantCell);
+
+  // Smaller and farther away
+  distantTurner.scale.setScalar(0.48);
+  distantTurner.position.set(-4, 1.70, -4.2);
+  distantCell.rotation.z = -0.31;
+
+  function moveDistantBacterium(t) {
+    if (reduced) {
+      distantTurner.position.x = -1.75;
+      distantTurner.rotation.y = 0.5;
+      distantTurner.rotation.x = -0.10;
+      return;
+    }
+
+    const distanceToCamera =
+      camera.position.z - distantTurner.position.z;
+
+    const halfVisibleWidth =
+      Math.tan(T.MathUtils.degToRad(camera.fov / 2)) *
+      distanceToCamera * camera.aspect;
+
+    const margin = 3.8;
+    const left = -halfVisibleWidth - margin;
+    const right = halfVisibleWidth + margin;
+
+    // Moves from left to right, repeating every 26 seconds
+    const progress = (t / 26 + 0.24) % 1;
+
+    distantTurner.position.x =
+      left + progress * (right - left);
+
+    // Independent 3D rotation
+    distantTurner.rotation.y =
+      t * Math.PI * 2 / 19 + 0.9;
+
+    distantTurner.rotation.x = -0.12;
+  }
+
+
+
+  
   function resize() {
     const w = Math.max(1, mount.clientWidth);
     const h = Math.max(1, mount.clientHeight);
@@ -269,6 +319,8 @@ function startBacterium(T, mount) {
   flags.rotation.z = 0.08 * Math.cos(t * 0.1);
   flags.rotation.x = 0.05 * Math.sin(t * 0.9);
 }
+    
+moveDistantBacterium(t);
     renderer.render(scene, camera);
     mount.classList.add('is-ready');
   }
