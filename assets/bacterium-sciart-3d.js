@@ -311,7 +311,7 @@ distantTurner.rotation.x =
   const beginning = performance.now();
   function draw(time) {
     const t = (time - beginning) / 1000;
-    turner.rotation.y = (reduced ? 0.36 : t * 2 * Math.PI / 12) + dx;
+    turner.rotation.y = (reduced ? 0.36 : t * 2 * Math.PI / 24) + dx;
     turner.rotation.x = 0.13 + dy + (reduced ? 0 : 0.035 * Math.sin(t * 0.55));
     if (!reduced) {
   flags.rotation.y = 0.14 * Math.sin(t * 0.5);
