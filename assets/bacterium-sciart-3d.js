@@ -312,71 +312,129 @@ distantTurner.rotation.x =
   let thirdTripIndex = -1;
   let thirdRoute;
 
-  function moveThirdBacterium(t) {
 
-    if (reduced) {
-      thirdMover.position.set(-2.5, -2.0, -4.8);
-      thirdHeading.rotation.z = Math.PI + 0.5;
-      thirdRoll.rotation.x = 0.25;
-      return;
-    }
 
-    const tripIndex = Math.floor(t / thirdTripSeconds);
 
-    // Choose a NEW random route after every journey
-    if (tripIndex !== thirdTripIndex) {
-      thirdTripIndex = tripIndex;
 
-      thirdRoute = {
-        fromLeft: Math.random() < 0.65,
-        toRight: Math.random() < 0.65,
-        startSlot: 0.25 + Math.random() * 0.55,
-        endSlot: 0.25 + Math.random() * 0.55
-      };
-    }
+  
+function moveThirdBacterium(t) {
 
-    // Calculate visible area at the bacterium's depth
-    const depth = camera.position.z - thirdMover.position.z;
-
-    const halfHeight =
-      Math.tan(T.MathUtils.degToRad(camera.fov / 2)) * depth;
-
-    const halfWidth = halfHeight * camera.aspect;
-
-    // Keep the full bacterium off-screen before restarting
-    const margin = 2.6;
-
-    // Random entry from the left or bottom
-    const x0 = thirdRoute.fromLeft
-      ? -halfWidth - margin
-      : -halfWidth * thirdRoute.startSlot;
-
-    const y0 = thirdRoute.fromLeft
-      ? -halfHeight * thirdRoute.startSlot
-      : -halfHeight - margin;
-
-    // Random exit through the right or top
-    const x1 = thirdRoute.toRight
-      ? halfWidth + margin
-      : halfWidth * thirdRoute.endSlot;
-
-    const y1 = thirdRoute.toRight
-      ? halfHeight * thirdRoute.endSlot
-      : halfHeight + margin;
-
-    // Travel along the diagonal
-    const progress = (t / thirdTripSeconds) % 1;
-
-    thirdMover.position.x = x0 + (x1 - x0) * progress;
-    thirdMover.position.y = y0 + (y1 - y0) * progress;
-
-    // Orient the cell so the flagella trail behind
-    const travelAngle = Math.atan2(y1 - y0, x1 - x0);
-    thirdHeading.rotation.z = travelAngle + Math.PI;
-
-    // Rotate around its own longitudinal axis
-    thirdRoll.rotation.x = t * Math.PI * 2 / 11;
+  if (reduced) {
+    thirdMover.position.set(-2.5, -2.0, -4.8);
+    thirdHeading.rotation.z = Math.PI + 0.5;
+    thirdRoll.rotation.x = 0.25;
+    return;
   }
+
+  const tripIndex = Math.floor(t / thirdTripSeconds);
+
+  // Calculate visible area at the bacterium's depth
+  const depth = camera.position.z - thirdMover.position.z;
+
+  const halfHeight =
+    Math.tan(T.MathUtils.degToRad(camera.fov / 2)) * depth;
+
+  const halfWidth = halfHeight * camera.aspect;
+
+  // Margin keeps the entire bacterium outside the screen
+  // before entering or after leaving
+  const margin = 2.6;
+  const maxX = halfWidth + margin;
+  const maxY = halfHeight + margin;
+
+  // Select a NEW direction and trajectory for every journey
+  if (tripIndex !== thirdTripIndex) {
+
+    thirdTripIndex = tripIndex;
+
+    // Four possible directions:
+    // 0 = up-right
+    // 1 = up-left
+    // 2 = down-left
+    // 3 = down-right
+    const quadrant = Math.floor(Math.random() * 4);
+
+    // Random angle between 15 and 75 degrees
+    // within the selected quadrant
+    const degrees = 15 + Math.random() * 60;
+
+    const angle =
+      quadrant * Math.PI / 2 +
+      T.MathUtils.degToRad(degrees);
+
+    const vx = Math.cos(angle);
+    const vy = Math.sin(angle);
+
+    // Randomly enter through a horizontal or vertical edge
+    const enterFromSide = Math.random() < 0.5;
+
+    let x0;
+    let y0;
+
+    if (enterFromSide) {
+
+      // Enter from left or right
+      x0 = vx > 0 ? -maxX : maxX;
+
+      // Random vertical entry position
+      y0 = (Math.random() * 1.6 - 0.8) * halfHeight;
+
+    } else {
+
+      // Enter from bottom or top
+      y0 = vy > 0 ? -maxY : maxY;
+
+      // Random horizontal entry position
+      x0 = (Math.random() * 1.6 - 0.8) * halfWidth;
+    }
+
+    // Find where the trajectory exits the visible area
+    const distanceX =
+      (vx > 0 ? maxX - x0 : -maxX - x0) / vx;
+
+    const distanceY =
+      (vy > 0 ? maxY - y0 : -maxY - y0) / vy;
+
+    const travelDistance = Math.min(
+      distanceX,
+      distanceY
+    );
+
+    // Save this journey's trajectory
+    thirdRoute = {
+      x0: x0,
+      y0: y0,
+
+      x1: x0 + vx * travelDistance,
+      y1: y0 + vy * travelDistance,
+
+      angle: angle
+    };
+  }
+
+  // Progress along the current journey
+  const progress = (t / thirdTripSeconds) % 1;
+
+  // Move along the selected diagonal
+  thirdMover.position.x =
+    thirdRoute.x0 +
+    (thirdRoute.x1 - thirdRoute.x0) * progress;
+
+  thirdMover.position.y =
+    thirdRoute.y0 +
+    (thirdRoute.y1 - thirdRoute.y0) * progress;
+
+  // Orient the bacterium along its swimming direction,
+  // keeping the flagella pointing backwards
+  thirdHeading.rotation.z =
+    thirdRoute.angle + Math.PI;
+
+  // Independent rotation around its longitudinal axis
+  // One full rotation every 11 seconds
+  thirdRoll.rotation.x =
+    t * Math.PI * 2 / 11;
+}
+
 
   
   function resize() {
