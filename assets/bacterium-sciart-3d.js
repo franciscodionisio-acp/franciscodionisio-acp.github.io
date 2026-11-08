@@ -307,7 +307,7 @@ distantTurner.rotation.x =
   thirdRoll.add(thirdCell);
 
   // One diagonal journey every 28 seconds
-  const thirdTripSeconds = 10;
+  const thirdTripSeconds = 5;
 
   let thirdTripIndex = -1;
   let thirdRoute;
@@ -374,7 +374,7 @@ function moveThirdBacterium(t) {
     if (enterFromSide) {
 
       // Enter from left or right
-      x0 = vx > 0 ? -maxX : maxX;
+      x0 = vx > 0 ? -maxX*0.75 : maxX*0.75;
 
       // Random vertical entry position
       y0 = (Math.random() * 1.6 - 0.8) * halfHeight;
@@ -382,7 +382,7 @@ function moveThirdBacterium(t) {
     } else {
 
       // Enter from bottom or top
-      y0 = vy > 0 ? -maxY : maxY;
+      y0 = vy > 0 ? -maxY*0.75 : maxY*0.75;
 
       // Random horizontal entry position
       x0 = (Math.random() * 1.6 - 0.8) * halfWidth;
