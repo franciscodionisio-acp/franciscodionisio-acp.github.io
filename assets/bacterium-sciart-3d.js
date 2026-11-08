@@ -267,7 +267,7 @@ function startBacterium(T, mount) {
     const progress = (t / 26 + 0.24) % 1;
 
     distantTurner.position.x =
-      left + progress * (right - left);
+      right - progress * (right - left);
 
     // Independent 3D rotation
     distantTurner.rotation.y =
