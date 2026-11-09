@@ -574,7 +574,7 @@ function startBacterium(T, mount) {
 
     pairAnchor.set(
       -halfWidth + horizontalExtent + 0.35,
-      halfHeight - Math.max(0.85, 2.5 * scale + 0.25),
+      halfHeight - Math.max(0.55, 1.5 * scale + 0.10),
       pairSettings.depth
     );
   }
