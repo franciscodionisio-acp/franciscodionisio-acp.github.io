@@ -2,7 +2,10 @@
 /*
  * BACTERIUM 3D — hollow black interior, luminous wool-like chromosome.
  * Replace the entire assets/bacterium-sciart-3d.js with this file.
- * Three.js v0.165.0; transparent canvas; true 360-degree rotation.
+ * Three.js v0.165.0; transparent canvas; three independently animated cells.
+ * Main bacterium: 12s per turn. Second bacterium: 6s per axial turn,
+ * alternating travel direction every 26s. Third bacterium: 11s per axial
+ * turn, diagonal upward-right journeys (28s) and random re-entry points.
  */
 
 const mount = document.querySelector('[data-bacterium-3d]');
@@ -240,9 +243,9 @@ function startBacterium(T, mount) {
   distantTurner.add(distantCell);
 
   // Smaller and farther away
-distantTurner.scale.setScalar(0.44);
-distantTurner.position.set(-4, 4.35, -5.5);
-distantCell.rotation.z = 0.0;
+  distantTurner.scale.setScalar(0.44);
+  distantTurner.position.set(-4, 4.35, -5.5);
+  distantCell.rotation.z = 0.0;
 
   function moveDistantBacterium(t) {
     if (reduced) {
@@ -263,37 +266,91 @@ distantCell.rotation.z = 0.0;
     const left = -halfVisibleWidth - margin;
     const right = halfVisibleWidth + margin;
 
-    // Moves from left to right, repeating every 26 seconds
-    
-const journey = t / 6 + 0.24;
-const leg = Math.floor(journey);
-const progress = journey - leg;
+    // Alternate right-to-left and left-to-right journeys, 26 s each.
+    const journey = t / 26 + 0.24;
+    const leg = Math.floor(journey);
+    const progress = journey - leg;
+    const movingRight = leg % 2 === 1;
 
-// Alternate swimming direction after each journey
-const movingRight = leg % 2 === 1;
+    distantTurner.position.x = movingRight
+      ? left + progress * (right - left)
+      : right - progress * (right - left);
 
-// Horizontal movement
-distantTurner.position.x = movingRight
-  ? left + progress * (right - left)
-  : right - progress * (right - left);
-
-// Flagella trail behind the swimming bacterium
-distantTurner.rotation.y = movingRight ? Math.PI : 0;
-
-// Continue rotating around its longitudinal axis
-distantTurner.rotation.x =
-  t * Math.PI * 2 / 6;
-
+    // Flagella remain behind the cell as it swims.
+    distantTurner.rotation.y = movingRight ? Math.PI : 0;
+    distantTurner.rotation.x = t * Math.PI * 2 / 6;
   }
 
+  // A small conjugating pair in the background. The cells stay close while
+  // the whole pair drifts gently; a luminous plasmid travels through the
+  // connecting conjugation pilus from donor to recipient.
+  const conjugationPair = new T.Group();
+  scene.add(conjugationPair);
+  conjugationPair.scale.setScalar(0.28);
+  conjugationPair.position.set(0.25, -1.75, -5.2);
 
+  const donor = new T.Group();
+  donor.position.x = -0.98;
+  donor.rotation.z = Math.PI; // Flagella point away from the transfer bridge.
+  donor.add(cell.clone(true));
+  conjugationPair.add(donor);
 
-  // THIRD BACTERIUM — diagonal swimming with random re-entry
+  const recipient = new T.Group();
+  recipient.position.x = 0.98;
+  recipient.add(cell.clone(true));
+  conjugationPair.add(recipient);
+
+  // The two bare cell poles meet through a flexible, glowing pilus.
+  const transferCurve = path([
+    new T.Vector3(-0.34, -0.071, 0.02),
+    new T.Vector3(-0.21, -0.035, 0.10),
+    new T.Vector3(0, 0.015, 0.15),
+    new T.Vector3(0.21, 0.055, 0.10),
+    new T.Vector3(0.34, 0.071, 0.02)
+  ]);
+  conjugationPair.add(meshTube(transferCurve, 0.033, filamentGlow, 100));
+  conjugationPair.add(meshTube(transferCurve, 0.012, aqua, 100));
+
+  // A double-ring plasmid acts as a visible particle moving along the pilus.
+  const transferPlasmid = new T.Group();
+  transferPlasmid.rotation.y = Math.PI / 2;
+  const transferGlow = new T.Mesh(
+    new T.TorusGeometry(0.13, 0.027, 8, 32),
+    new T.MeshBasicMaterial({
+      color: 0xffbc4a, transparent: true, opacity: 0.24,
+      blending: T.AdditiveBlending, depthWrite: false
+    })
+  );
+  const transferRing = new T.Mesh(
+    new T.TorusGeometry(0.085, 0.012, 7, 28), gold
+  );
+  const transferRingSecond = new T.Mesh(
+    new T.TorusGeometry(0.085, 0.009, 7, 28), cream
+  );
+  transferRingSecond.rotation.x = 0.18;
+  transferPlasmid.add(transferGlow, transferRing, transferRingSecond);
+  conjugationPair.add(transferPlasmid);
+
+  function moveConjugatingPair(t) {
+    // Slow, shared floating motion keeps the cells in contact.
+    conjugationPair.position.x = 0.25 + 0.22 * Math.sin(t * 0.20);
+    conjugationPair.position.y = -1.75 + 0.16 * Math.sin(t * 0.27 + 0.8);
+    conjugationPair.rotation.z = 0.035 * Math.sin(t * 0.18);
+    conjugationPair.rotation.y = 0.06 * Math.sin(t * 0.23);
+
+    // One plasmid crosses the bridge every 7 seconds, donor to recipient.
+    const progress = (t / 7) % 1;
+    transferPlasmid.position.copy(transferCurve.getPointAt(progress));
+    transferPlasmid.rotation.z = 0.25 * Math.sin(t * 1.1);
+  }
+
+  
+  // THIRD BACTERIUM — swims diagonally upwards and re-enters at a
+  // different random starting position after leaving the visible area.
   const thirdMover = new T.Group();
   scene.add(thirdMover);
-
   thirdMover.scale.setScalar(0.40);
-  thirdMover.position.z = -4.8;
+  thirdMover.position.z = -4.8; // Behind the large bacterium
 
   const thirdHeading = new T.Group();
   thirdMover.add(thirdHeading);
@@ -301,142 +358,69 @@ distantTurner.rotation.x =
   const thirdRoll = new T.Group();
   thirdHeading.add(thirdRoll);
 
-  // Clone the complete original 3D bacterium
   const thirdCell = cell.clone(true);
-  thirdCell.rotation.set(0, 0, 0);
+  thirdCell.rotation.set(0, 0, 0); // Long axis is now aligned with local X
   thirdRoll.add(thirdCell);
 
-  // One diagonal journey every 28 seconds
-  const thirdTripSeconds = 5;
-
+  const thirdTripSeconds = 14; // Faster diagonal journeys; lower number = faster
   let thirdTripIndex = -1;
   let thirdRoute;
 
-
-
-
-
-  
-function moveThirdBacterium(t) {
-
-  if (reduced) {
-    thirdMover.position.set(-2.5, -2.0, -4.8);
-    thirdHeading.rotation.z = Math.PI + 0.5;
-    thirdRoll.rotation.x = 0.25;
-    return;
-  }
-
-  const tripIndex = Math.floor(t / thirdTripSeconds);
-
-  // Calculate visible area at the bacterium's depth
-  const depth = camera.position.z - thirdMover.position.z;
-
-  const halfHeight =
-    Math.tan(T.MathUtils.degToRad(camera.fov / 2)) * depth;
-
-  const halfWidth = halfHeight * camera.aspect;
-
-  // Margin keeps the entire bacterium outside the screen
-  // before entering or after leaving
-  const margin = 2.6;
-  const maxX = halfWidth + margin;
-  const maxY = halfHeight + margin;
-
-  // Select a NEW direction and trajectory for every journey
-  if (tripIndex !== thirdTripIndex) {
-
-    thirdTripIndex = tripIndex;
-
-    // Four possible directions:
-    // 0 = up-right
-    // 1 = up-left
-    // 2 = down-left
-    // 3 = down-right
-    const quadrant = Math.floor(Math.random() * 4);
-
-    // Random angle between 15 and 75 degrees
-    // within the selected quadrant
-    const degrees = 15 + Math.random() * 60;
-
-    const angle =
-      quadrant * Math.PI / 2 +
-      T.MathUtils.degToRad(degrees);
-
-    const vx = Math.cos(angle);
-    const vy = Math.sin(angle);
-
-    // Randomly enter through a horizontal or vertical edge
-    const enterFromSide = Math.random() < 0.5;
-
-    let x0;
-    let y0;
-
-    if (enterFromSide) {
-
-      // Enter from left or right
-      x0 = vx > 0 ? -maxX*0.65 : maxX*0.65;
-
-      // Random vertical entry position
-      y0 = (Math.random() * 1.6 - 0.8) * halfHeight;
-
-    } else {
-
-      // Enter from bottom or top
-      y0 = vy > 0 ? -maxY*0.65 : maxY*0.65;
-
-      // Random horizontal entry position
-      x0 = (Math.random() * 1.6 - 0.8) * halfWidth;
+  function moveThirdBacterium(t) {
+    if (reduced) {
+      thirdMover.position.set(-2.5, -2.0, -4.8);
+      thirdHeading.rotation.z = Math.PI + 0.5;
+      thirdRoll.rotation.x = 0.25;
+      return;
     }
 
-    // Find where the trajectory exits the visible area
-    const distanceX =
-      (vx > 0 ? maxX - x0 : -maxX - x0) / vx;
+    const tripIndex = Math.floor(t / thirdTripSeconds);
 
-    const distanceY =
-      (vy > 0 ? maxY - y0 : -maxY - y0) / vy;
+    // A new route is selected only when the previous journey is finished.
+    if (tripIndex !== thirdTripIndex) {
+      thirdTripIndex = tripIndex;
+      thirdRoute = {
+        fromLeft: Math.random() < 0.65,
+        toRight: Math.random() < 0.65,
+        startSlot: 0.25 + Math.random() * 0.55,
+        endSlot: 0.25 + Math.random() * 0.55
+      };
+    }
 
-    const travelDistance = Math.min(
-      distanceX,
-      distanceY
-    );
+    // Compute the visible area at this cell's distance from the camera.
+    const depth = camera.position.z - thirdMover.position.z;
+    const halfHeight = Math.tan(T.MathUtils.degToRad(camera.fov / 2)) * depth;
+    const halfWidth = halfHeight * camera.aspect;
+    const margin = 2.6; // The whole bacterium goes off-screen before resetting
 
-    // Save this journey's trajectory
-    thirdRoute = {
-      x0: x0,
-      y0: y0,
+    // Random lower-left start: enter from the left OR bottom edge.
+    const x0 = thirdRoute.fromLeft
+      ? -halfWidth - margin
+      : -halfWidth * thirdRoute.startSlot;
+    const y0 = thirdRoute.fromLeft
+      ? -halfHeight * thirdRoute.startSlot
+      : -halfHeight - margin;
 
-      x1: x0 + vx * travelDistance,
-      y1: y0 + vy * travelDistance,
+    // Random upper-right exit: leave at the right OR top edge.
+    const x1 = thirdRoute.toRight
+      ? halfWidth + margin
+      : halfWidth * thirdRoute.endSlot;
+    const y1 = thirdRoute.toRight
+      ? halfHeight * thirdRoute.endSlot
+      : halfHeight + margin;
 
-      angle: angle
-    };
+    const progress = (t / thirdTripSeconds) % 1;
+    thirdMover.position.x = x0 + (x1 - x0) * progress;
+    thirdMover.position.y = y0 + (y1 - y0) * progress;
+
+    // The flagella point backwards, opposite to the direction of travel.
+    const travelAngle = Math.atan2(y1 - y0, x1 - x0);
+    thirdHeading.rotation.z = travelAngle + Math.PI;
+
+    // Spin the small cell around its own long axis (no flagellar undulation).
+    thirdRoll.rotation.x = t * Math.PI * 2 / 11;
   }
 
-  // Progress along the current journey
-  const progress = (t / thirdTripSeconds) % 1;
-
-  // Move along the selected diagonal
-  thirdMover.position.x =
-    thirdRoute.x0 +
-    (thirdRoute.x1 - thirdRoute.x0) * progress;
-
-  thirdMover.position.y =
-    thirdRoute.y0 +
-    (thirdRoute.y1 - thirdRoute.y0) * progress;
-
-  // Orient the bacterium along its swimming direction,
-  // keeping the flagella pointing backwards
-  thirdHeading.rotation.z =
-    thirdRoute.angle + Math.PI;
-
-  // Independent rotation around its longitudinal axis
-  // One full rotation every 11 seconds
-  thirdRoll.rotation.x =
-    t * Math.PI * 2 / 6;
-}
-
-
-  
   function resize() {
     const w = Math.max(1, mount.clientWidth);
     const h = Math.max(1, mount.clientHeight);
@@ -470,22 +454,18 @@ function moveThirdBacterium(t) {
   const beginning = performance.now();
   function draw(time) {
     const t = (time - beginning) / 1000;
-    turner.rotation.y = (reduced ? 0.36 : t * 2 * Math.PI / 24) + dx;
+    turner.rotation.y = (reduced ? 0.36 : t * 2 * Math.PI / 12) + dx;
     turner.rotation.x = 0.13 + dy + (reduced ? 0 : 0.035 * Math.sin(t * 0.55));
-    if (!reduced) {
-  flags.rotation.y = 0.14 * Math.sin(t * 0.5);
-  flags.rotation.z = 0.08 * Math.cos(t * 0.1);
-  flags.rotation.x = 0.05 * Math.sin(t * 0.9);
-}
-    
+      if (!reduced) {
+      flags.rotation.y = 0.14 * Math.sin(t * 0.5);
+      flags.rotation.z = 0.08 * Math.cos(t * 0.1);
+      flags.rotation.x = 0.05 * Math.sin(t * 0.9);
+    }
 
-
-moveDistantBacterium(t);
-moveThirdBacterium(t);
-
-renderer.render(scene, camera);
-
-    
+    moveDistantBacterium(t);
+    moveThirdBacterium(t);
+    moveConjugatingPair(t);
+    renderer.render(scene, camera);
     mount.classList.add('is-ready');
   }
   function animate(time) {
