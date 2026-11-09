@@ -10,12 +10,40 @@
 
 const mount = document.querySelector('[data-bacterium-3d]');
 if (mount) {
-  import('https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js')
-    .then(THREE => startBacterium(THREE, mount))
-    .catch(err => {
-      console.error('Não foi possível iniciar a bactéria 3D:', err);
-      mount.classList.add('bacterium-fallback-only');
-    });
+  loadThreeAndStart(mount);
+}
+
+async function loadThreeAndStart(mount) {
+  const moduleUrl = 'https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js';
+  let THREE = null;
+  let lastError = null;
+
+  // Retry transient CDN/network failures instead of leaving the static image
+  // on screen until the visitor manually reloads the page.
+  for (let attempt = 0; attempt < 4 && !THREE; attempt++) {
+    try {
+      THREE = await import(moduleUrl);
+    } catch (error) {
+      lastError = error;
+      console.warn(`Three.js load attempt ${attempt + 1} failed.`, error);
+      if (attempt < 3) {
+        await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+      }
+    }
+  }
+
+  if (!THREE) {
+    console.error('Could not load Three.js after several attempts:', lastError);
+    mount.classList.add('bacterium-fallback-only');
+    return;
+  }
+
+  try {
+    startBacterium(THREE, mount);
+  } catch (error) {
+    console.error('Could not start the 3D bacterium:', error);
+    mount.classList.add('bacterium-fallback-only');
+  }
 }
 
 function startBacterium(T, mount) {
@@ -279,7 +307,9 @@ function startBacterium(T, mount) {
     distantTurner.rotation.x = t * Math.PI * 2 / 6;
   }
 
-  // Two small cells drift together as a conjugating pair.
+  // A small conjugating pair in the background. The cells stay close while
+  // the whole pair drifts gently; a luminous plasmid travels through the
+  // connecting conjugation pilus from donor to recipient.
   const conjugationPair = new T.Group();
   scene.add(conjugationPair);
   conjugationPair.scale.setScalar(0.28);
@@ -287,19 +317,19 @@ function startBacterium(T, mount) {
 
   const donor = new T.Group();
   donor.position.x = -2.75;
-  // Cancel the cell's built-in tilt; flagella point away from the bridge.
+  // Cancel the cell's built-in tilt and point its flagella away from the bridge.
   donor.rotation.z = Math.PI + 0.38;
   donor.add(cell.clone(true));
   conjugationPair.add(donor);
 
   const recipient = new T.Group();
   recipient.position.x = 2.75;
-  // Cancel the cell's built-in tilt so both transfer poles line up.
+  // Cancel the cell's built-in tilt so the two transfer poles line up.
   recipient.rotation.z = 0.38;
   recipient.add(cell.clone(true));
   conjugationPair.add(recipient);
 
-  // The two bare poles connect through a flexible, glowing conjugation pilus.
+  // The two bare cell poles meet through a flexible, glowing pilus.
   const transferCurve = path([
     new T.Vector3(-0.30, 0, 0.02),
     new T.Vector3(-0.16, 0, 0.10),
@@ -310,7 +340,7 @@ function startBacterium(T, mount) {
   conjugationPair.add(meshTube(transferCurve, 0.033, filamentGlow, 100));
   conjugationPair.add(meshTube(transferCurve, 0.012, aqua, 100));
 
-  // A double-ring plasmid moves along the pilus from donor to recipient.
+  // A double-ring plasmid acts as a visible particle moving along the pilus.
   const transferPlasmid = new T.Group();
   transferPlasmid.rotation.y = Math.PI / 2;
   const transferGlow = new T.Mesh(
@@ -331,7 +361,7 @@ function startBacterium(T, mount) {
   conjugationPair.add(transferPlasmid);
 
   function moveConjugatingPair(t) {
-    // Slow shared floating motion keeps the two cells together.
+    // Slow, shared floating motion keeps the two cells in contact.
     conjugationPair.position.x = -1.5 + 0.18 * Math.sin(t * 0.20);
     conjugationPair.position.y = 2.2 + 0.14 * Math.sin(t * 0.27 + 0.8);
     conjugationPair.rotation.z = 0.035 * Math.sin(t * 0.18);
@@ -343,12 +373,11 @@ function startBacterium(T, mount) {
     transferPlasmid.rotation.z = 0.25 * Math.sin(t * 1.1);
   }
 
-  // THIRD BACTERIUM — takes random diagonal paths and re-enters at
-  // a different random starting position after leaving the visible area.
+  // THIRD BACTERIUM — swims diagonally and re-enters at a random position.
   const thirdMover = new T.Group();
   scene.add(thirdMover);
   thirdMover.scale.setScalar(0.40);
-  thirdMover.position.z = -4.8; // Behind the large bacterium
+  thirdMover.position.z = -4.8;
 
   const thirdHeading = new T.Group();
   thirdMover.add(thirdHeading);
@@ -357,10 +386,10 @@ function startBacterium(T, mount) {
   thirdHeading.add(thirdRoll);
 
   const thirdCell = cell.clone(true);
-  thirdCell.rotation.set(0, 0, 0); // Long axis is now aligned with local X
+  thirdCell.rotation.set(0, 0, 0);
   thirdRoll.add(thirdCell);
 
-  const thirdTripSeconds = 14; // Lower number means faster diagonal movement
+  const thirdTripSeconds = 14;
   let thirdTripIndex = -1;
   let thirdRoute;
 
@@ -373,8 +402,6 @@ function startBacterium(T, mount) {
     }
 
     const tripIndex = Math.floor(t / thirdTripSeconds);
-
-    // Choose a new route only when the previous journey is finished.
     if (tripIndex !== thirdTripIndex) {
       thirdTripIndex = tripIndex;
       thirdRoute = {
@@ -385,13 +412,11 @@ function startBacterium(T, mount) {
       };
     }
 
-    // Compute the visible area at this cell's distance from the camera.
     const depth = camera.position.z - thirdMover.position.z;
     const halfHeight = Math.tan(T.MathUtils.degToRad(camera.fov / 2)) * depth;
     const halfWidth = halfHeight * camera.aspect;
-    const margin = 2.6; // The whole bacterium leaves the screen before resetting
+    const margin = 2.6;
 
-    // Random start: enter from the left or bottom edge.
     const x0 = thirdRoute.fromLeft
       ? -halfWidth - margin
       : -halfWidth * thirdRoute.startSlot;
@@ -399,7 +424,6 @@ function startBacterium(T, mount) {
       ? -halfHeight * thirdRoute.startSlot
       : -halfHeight - margin;
 
-    // Random exit: leave through the right or top edge.
     const x1 = thirdRoute.toRight
       ? halfWidth + margin
       : halfWidth * thirdRoute.endSlot;
@@ -411,11 +435,8 @@ function startBacterium(T, mount) {
     thirdMover.position.x = x0 + (x1 - x0) * progress;
     thirdMover.position.y = y0 + (y1 - y0) * progress;
 
-    // Flagella point backwards, opposite to the direction of travel.
     const travelAngle = Math.atan2(y1 - y0, x1 - x0);
     thirdHeading.rotation.z = travelAngle + Math.PI;
-
-    // Spin the small cell around its long axis; flagella do not undulate.
     thirdRoll.rotation.x = t * Math.PI * 2 / 11;
   }
 
@@ -432,7 +453,6 @@ function startBacterium(T, mount) {
     new ResizeObserver(resize).observe(mount);
   } else window.addEventListener('resize', resize);
 
-  // Mouse/touch rotation works in addition to automatic full turns.
   let pressed = false, px = 0, py = 0, dx = 0, dy = 0;
   const canvas = renderer.domElement;
   canvas.addEventListener('pointerdown', e => {
@@ -450,10 +470,13 @@ function startBacterium(T, mount) {
     canvas.addEventListener(type, () => { pressed = false; }));
 
   const beginning = performance.now();
+  let animationFrame = null;
+
   function draw(time) {
     const t = (time - beginning) / 1000;
     turner.rotation.y = (reduced ? 0.36 : t * 2 * Math.PI / 12) + dx;
     turner.rotation.x = 0.13 + dy + (reduced ? 0 : 0.035 * Math.sin(t * 0.55));
+
     if (!reduced) {
       flags.rotation.y = 0.14 * Math.sin(t * 0.5);
       flags.rotation.z = 0.08 * Math.cos(t * 0.1);
@@ -466,12 +489,30 @@ function startBacterium(T, mount) {
     renderer.render(scene, camera);
     mount.classList.add('is-ready');
   }
+
   function animate(time) {
-    if (!document.hidden) draw(time);
-    if (!reduced) requestAnimationFrame(animate);
+    // Schedule the next frame first, so one rendering error cannot stop
+    // all subsequent animation frames.
+    animationFrame = requestAnimationFrame(animate);
+    if (document.hidden) return;
+
+    try {
+      draw(time);
+    } catch (error) {
+      console.error('A bacterium animation frame failed:', error);
+    }
   }
-  draw(beginning);
-  if (!reduced) requestAnimationFrame(animate);
+
+  try {
+    draw(beginning);
+  } catch (error) {
+    console.error('The first bacterium frame failed:', error);
+  }
+
+  if (!reduced && animationFrame === null) {
+    animationFrame = requestAnimationFrame(animate);
+  }
+
   canvas.addEventListener('webglcontextlost', event => {
     event.preventDefault();
     mount.classList.remove('is-ready');
