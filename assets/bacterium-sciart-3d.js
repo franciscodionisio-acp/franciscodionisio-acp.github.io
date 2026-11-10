@@ -428,7 +428,7 @@ function startBacterium(T, mount) {
   distantCell.rotation.set(0, 0, 0);
   distantTurner.add(distantCell);
   distantTurner.scale.setScalar(0.44);
-  distantTurner.position.set(-4, 4.35, -5.5);
+  distantTurner.position.set(-4, 3.55, -5.5);
   scene.add(distantTurner);
 
   function visibleBounds(z) {
