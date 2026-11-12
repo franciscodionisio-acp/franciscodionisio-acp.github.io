@@ -1,18 +1,5 @@
 window.ACADEMIC_PUBLICATIONS = [
-  {
-    "title": "Clinical and Environmental Plasmids: Antibiotic Resistance, Virulence, Mobility, and ESKAPEE Pathogens",
-    "year": 2026,
-    "authors": "Domingues, Célia P.F., Rebelo, João S., Dionisio, Francisco, Nogueira, Teresa V.",
-    "journal": "Antibiotics, 2026, 15(1), 29",
-    "type": "Article",
-    "doi": "10.3390/antibiotics15010029",
-    "id": "scopus-02",
-    "source": "Scopus; ORCID DOI where available",
-    "topic": "Plasmids & HGT",
-    "kind": "Journal / proceedings",
-    "href": "https://doi.org/10.3390/antibiotics15010029",
-    "linkLabel": "DOI"
-  },
+  
   {
     "title": "Drivers of antimicrobial resistance gene clustering in plasmids: Distribution, host clinical relevance, and plasmid mobility",
     "year": 2026,
@@ -39,6 +26,20 @@ window.ACADEMIC_PUBLICATIONS = [
     "topic": "Evolution & cooperation",
     "kind": "Journal / proceedings",
     "href": "https://doi.org/10.1590/s0104-59702025000100061en",
+    "linkLabel": "DOI"
+  },
+  {
+    "title": "Clinical and Environmental Plasmids: Antibiotic Resistance, Virulence, Mobility, and ESKAPEE Pathogens",
+    "year": 2026,
+    "authors": "Domingues, Célia P.F., Rebelo, João S., Dionisio, Francisco, Nogueira, Teresa V.",
+    "journal": "Antibiotics, 2026, 15(1), 29",
+    "type": "Article",
+    "doi": "10.3390/antibiotics15010029",
+    "id": "scopus-02",
+    "source": "Scopus; ORCID DOI where available",
+    "topic": "Plasmids & HGT",
+    "kind": "Journal / proceedings",
+    "href": "https://doi.org/10.3390/antibiotics15010029",
     "linkLabel": "DOI"
   },
   {
