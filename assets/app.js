@@ -7,7 +7,7 @@
   const list = $('pub-results'), count = $('pub-count'), total = $('pub-total');
   const more = $('load-more'), empty = $('empty-results');
   const menuButton = $('menu-button'), nav = $('main-nav');
-  let visible = papers.length;
+  let visible = 20;
 
   // Escape strings from bibliographic data before injecting HTML.
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
